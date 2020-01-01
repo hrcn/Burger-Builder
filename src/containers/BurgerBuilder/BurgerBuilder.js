@@ -2,6 +2,14 @@ import React, { Component } from "react";
 
 import Auxi from '../../hoc/Auxi';
 import Burger from '../../components/Burger/Burger';
+import BuildControls from '../../components/Burger/BuildControls/BuildControls';
+
+const ingredient_prices = {
+    salad: 0.5,
+    cheese: 0.4,
+    meat: 1.3,
+    bacon: 0.6
+}
 
 class BurgerBuilder extends Component {
     state = {
@@ -10,14 +18,60 @@ class BurgerBuilder extends Component {
             bacon: 0,
             cheese: 0,
             meat: 0
+        },
+        totalPrice: 4
+    }
+
+    addIngredientHandler = (type) => {
+        const oldCount = this.state.ingredients[type];
+        const updatedCount = oldCount + 1;
+        const updatedIngredients = {
+            ...this.state.ingredients
         }
+        updatedIngredients[type] = updatedCount;
+
+        const priceAddition = ingredient_prices[type];
+        const oldPrice = this.state.totalPrice;
+        const updatedPrice = oldPrice + priceAddition;
+        this.setState({totalPrice: updatedPrice, ingredients: updatedIngredients})
+    }
+
+    removeIngredientHandler = (type) => {
+        const oldCount = this.state.ingredients[type];
+
+        if (oldCount <= 0) {
+            return null;
+        }
+
+        const updatedCount = oldCount - 1;
+        const updatedIngredients = {
+            ...this.state.ingredients
+        }
+        updatedIngredients[type] = updatedCount;
+
+        const priceDeduction = ingredient_prices[type];
+        const oldPrice = this.state.totalPrice;
+        const updatedPrice = oldPrice - priceDeduction;
+        this.setState({totalPrice: updatedPrice, ingredients: updatedIngredients})
     }
 
     render() {
+        const disabledInfo = {
+            ...this.state.ingredients
+        };
+
+        // {salad: true, meat: false, ...}
+        for(let key in disabledInfo) {
+            disabledInfo[key] = disabledInfo[key] <= 0
+        }
+
         return (
             <Auxi>
                 <Burger ingredients={this.state.ingredients} />
-                <div>Build Controls</div>
+                <BuildControls 
+                ingredientAdded={this.addIngredientHandler}
+                ingredientRemoved={this.removeIngredientHandler} 
+                disabled={disabledInfo} />
             </Auxi>
         );
     }
